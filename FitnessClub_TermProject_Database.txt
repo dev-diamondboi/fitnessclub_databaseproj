@@ -1,0 +1,250 @@
+-- Statements
+DROP TABLE ff_membership CASCADE CONSTRAINTS;
+DROP TABLE ff_status CASCADE CONSTRAINTS;
+DROP TABLE ff_days CASCADE CONSTRAINTS;
+DROP TABLE ff_member CASCADE CONSTRAINTS;
+DROP TABLE ff_instructor CASCADE CONSTRAINTS;
+DROP TABLE ff_class CASCADE CONSTRAINTS;
+DROP TABLE ff_class_day CASCADE CONSTRAINTS;
+DROP TABLE ff_class_member CASCADE CONSTRAINTS;
+DROP TABLE ff_payment CASCADE CONSTRAINTS;
+DROP SEQUENCE payment_id_seq;
+DROP SEQUENCE member_id_seq;
+
+
+-- Sequences
+CREATE SEQUENCE payment_id_seq
+START WITH 10001
+INCREMENT BY 1
+NOCACHE;
+
+CREATE SEQUENCE member_id_seq
+START WITH 11
+INCREMENT BY 1
+NOCACHE;
+
+-- CREATE Statements
+--1
+CREATE TABLE ff_membership(
+    membership_id NUMBER(2),
+    membership_type VARCHAR2(20),
+    price NUMBER(8,2),
+    CONSTRAINT membership_id_pk PRIMARY KEY (membership_id)
+);
+
+--2
+CREATE TABLE ff_status(
+    idstatus NUMBER(2),
+    statusdesc VARCHAR2(15),
+    CONSTRAINT status_id_pk PRIMARY KEY (idstatus)
+);
+
+--3
+CREATE TABLE ff_days(
+    day_id NUMBER(2),
+    day_name VARCHAR2(15),
+    CONSTRAINT day_id_pk PRIMARY KEY (day_id)
+);
+
+--4 
+CREATE TABLE ff_member(
+    member_id NUMBER(10),
+    firstname VARCHAR2(30),
+    lastname VARCHAR2(30),
+    date_of_birth DATE,
+    phone_number VARCHAR2(15),
+    email VARCHAR2(30),
+    address VARCHAR2(50),
+    CONSTRAINT member_id_pk PRIMARY KEY (member_id)
+);
+
+--5
+CREATE TABLE ff_instructor(
+    instructor_id NUMBER(10),
+    firstname VARCHAR2(30),
+    lastname VARCHAR2(30),
+    speciality VARCHAR2(30),
+    phone_number VARCHAR2(15),
+    salary NUMBER(9,2),
+    CONSTRAINT instructor_id_pk PRIMARY KEY (instructor_id)
+);
+
+--6
+CREATE TABLE ff_class(
+    class_id NUMBER(10),
+    class_name VARCHAR2(30),
+    instructor_id NUMBER(10),
+    start_time VARCHAR(20),
+    end_time VARCHAR(20),
+    CONSTRAINT class_id_pk PRIMARY KEY (class_id),
+    CONSTRAINT class_idinstructor_fk FOREIGN KEY (instructor_id)
+                REFERENCES ff_instructor (instructor_id)
+);
+
+--7
+CREATE TABLE ff_class_day(
+    class_id NUMBER(10),
+    day_id NUMBER(2),
+    CONSTRAINT class_days_pk PRIMARY KEY (class_id, day_id),
+    CONSTRAINT class_fk FOREIGN KEY (class_id) 
+                REFERENCES ff_class (class_id),
+    CONSTRAINT day_fk FOREIGN KEY (day_id) 
+                REFERENCES ff_days (day_id)
+);
+
+--8
+CREATE TABLE ff_class_member(
+    class_member_id NUMBER(6),
+    class_id NUMBER(10),
+    member_id NUMBER(10),
+    CONSTRAINT class_member_id_pk PRIMARY KEY (class_member_id),
+    CONSTRAINT class_member_class_fk FOREIGN KEY (class_id)
+                REFERENCES ff_class (class_id),
+    CONSTRAINT class_member_member_fk FOREIGN KEY (member_id)
+                REFERENCES ff_member (member_id)
+);
+
+--9
+CREATE TABLE ff_payment(
+    payment_id NUMBER(10),
+    member_id NUMBER(10),
+    membership_id NUMBER(2),
+    payment_date DATE,
+    amount NUMBER(10,2),
+    idstatus NUMBER(2),
+    CONSTRAINT payment_id_pk PRIMARY KEY (payment_id),
+    CONSTRAINT pay_idmember_fk FOREIGN KEY (member_id) 
+                REFERENCES ff_member (member_id),
+    CONSTRAINT pay_idmembership_fk FOREIGN KEY (membership_id)
+                REFERENCES ff_membership (membership_id),
+    CONSTRAINT pay_idstatus_fk FOREIGN KEY (idstatus)
+                REFERENCES ff_status (idstatus)
+);
+
+
+-- Indexes
+CREATE INDEX payment_date_idx
+ON ff_payment (payment_date);
+
+CREATE INDEX member_phone_number_idx
+ON ff_member (phone_number);
+
+
+INSERT INTO ff_membership VALUES (1, 'Basic', 39.99);
+INSERT INTO ff_membership VALUES (2, 'Standard', 49.99);
+INSERT INTO ff_membership VALUES (3, 'Premium', 89.99);
+INSERT INTO ff_membership VALUES (4, 'Family', 109.99);
+INSERT INTO ff_membership VALUES (5, 'Student', 29.99);
+
+
+INSERT INTO ff_status VALUES (1, 'Paid');
+INSERT INTO ff_status VALUES (2, 'Pending');
+INSERT INTO ff_status VALUES (3, 'Refunded');
+INSERT INTO ff_status VALUES (4, 'Failed');
+INSERT INTO ff_status VALUES (5, 'Partially Paid');
+
+
+INSERT INTO ff_days VALUES (1, 'Monday');
+INSERT INTO ff_days VALUES (2, 'Tuesday');
+INSERT INTO ff_days VALUES (3, 'Wednesday');
+INSERT INTO ff_days VALUES (4, 'Thursday');
+INSERT INTO ff_days VALUES (5, 'Friday');
+INSERT INTO ff_days VALUES (6, 'Saturday');
+INSERT INTO ff_days VALUES (7, 'Sunday');
+
+
+INSERT INTO ff_member VALUES (1, 'John', 'Doe', '15-JAN-1990', '437-456-7890', 'john.doe@gmail.com', '123 Elm St');
+
+-- Using MEMBER_ID_SEQ sequence to update data  
+UPDATE ff_member
+SET member_id = member_id_seq.NEXTVAL
+WHERE firstname = 'John' AND lastname = 'Doe';
+
+INSERT INTO ff_member VALUES (MEMBER_ID_SEQ.NEXTVAL, 'Jane', 'Smith', '22-FEB-1985', '437-567-8901', 'jane.smith@gmail.com', '456 Oak St');
+INSERT INTO ff_member VALUES (MEMBER_ID_SEQ.NEXTVAL, 'Robert', 'Brown', '30-MAR-1978', '647-678-9012', 'robert.brown@gmail.com', '789 Pine St');
+INSERT INTO ff_member VALUES (MEMBER_ID_SEQ.NEXTVAL, 'Emily', 'Davis', '12-APR-1992', '437-789-0123', 'emily.davis@yahoo.com', '101 Maple St');
+INSERT INTO ff_member VALUES (MEMBER_ID_SEQ.NEXTVAL, 'Michael', 'Wilson', '05-MAY-1980', '437-890-1234', 'michael.wilson@gmail.com', '202 Birch St');
+INSERT INTO ff_member VALUES (MEMBER_ID_SEQ.NEXTVAL, 'Sarah', 'Johnson', '18-JUN-1988', '637-901-2345', 'sarah.johnson@yahoo.com', '303 Cedar St');
+INSERT INTO ff_member VALUES (MEMBER_ID_SEQ.NEXTVAL, 'David', 'Miller', '25-JUL-1995', '637-012-3456', 'david.miller@gmail.com', '404 Spruce St');
+INSERT INTO ff_member VALUES (MEMBER_ID_SEQ.NEXTVAL, 'Laura', 'Moore', '10-AUG-1983', '637-123-4567', 'laura.moore@gmail.com', '505 Aspen St');
+INSERT INTO ff_member VALUES (MEMBER_ID_SEQ.NEXTVAL, 'James', 'Taylor', '09-SEP-1975', '437-234-5678', 'james.taylor@yahoo.com', '606 Willow St');
+INSERT INTO ff_member VALUES (MEMBER_ID_SEQ.NEXTVAL, 'Anna', 'Anderson', '01-OCT-1993', '437-345-6789', 'anna.anderson@yahoo.com', '707 Fir St');
+
+
+INSERT INTO ff_instructor VALUES (1, 'Alice', 'White', 'Yoga', '437-987-6543', 45000);
+INSERT INTO ff_instructor VALUES (2, 'Brian', 'Black', 'Cardio', '437-876-5432', 50000);
+INSERT INTO ff_instructor VALUES (3, 'Catherine', 'Green', 'Strength Training', '437-765-4321', 52000);
+INSERT INTO ff_instructor VALUES (4, 'Daniel', 'Blue', 'Pilates', '437-654-3210', 47000);
+INSERT INTO ff_instructor VALUES (5, 'Erica', 'Gray', 'Zumba', '437-543-2109', 46000);
+INSERT INTO ff_instructor VALUES (6, 'Frank', 'Red', 'CrossFit', '637-432-1098', 55000);
+INSERT INTO ff_instructor VALUES (7, 'Grace', 'Yellow', 'Aerobics', '637-321-0987', 48000);
+INSERT INTO ff_instructor VALUES (8, 'Henry', 'Brown', 'Spin', '437-210-9876', 49000);
+INSERT INTO ff_instructor VALUES (9, 'Ivy', 'Silver', 'HIIT', '437-109-8765', 53000);
+INSERT INTO ff_instructor VALUES (10, 'Jack', 'Gold', 'Kickboxing', '437-098-7654', 54000);
+
+
+INSERT INTO ff_class VALUES (21, 'Morning Yoga', 1, '07:00:00', '08:00:00');
+INSERT INTO ff_class VALUES (22, 'Cardio Blast', 2, '09:00:00', '10:00:00');
+INSERT INTO ff_class VALUES (23, 'Strength Training', 3, '11:00:00', '12:00:00');
+INSERT INTO ff_class VALUES (24, 'Pilates Basics', 4, '13:00:00', '14:00:00');
+INSERT INTO ff_class VALUES (25, 'Zumba Dance', 5, '15:00:00', '16:00:00');
+INSERT INTO ff_class VALUES (26, 'CrossFit Challenge', 6, '17:00:00', '18:00:00');
+INSERT INTO ff_class VALUES (27, 'Aerobics Fun', 7, '18:30:00', '19:30:00');
+INSERT INTO ff_class VALUES (28, 'Spin Class', 8, '20:00:00', '21:00:00');
+INSERT INTO ff_class VALUES (29, 'HIIT Workout', 9, '07:00:00', '08:00:00');
+INSERT INTO ff_class VALUES (30, 'Kickboxing Power', 10, '09:00:00', '10:00:00');
+
+
+INSERT INTO ff_class_day VALUES (21, 1);
+INSERT INTO ff_class_day VALUES (21, 3);
+INSERT INTO ff_class_day VALUES (21, 5);
+INSERT INTO ff_class_day VALUES (22, 2);  
+INSERT INTO ff_class_day VALUES (22, 4);  
+INSERT INTO ff_class_day VALUES (23, 1); 
+INSERT INTO ff_class_day VALUES (23, 3); 
+INSERT INTO ff_class_day VALUES (24, 5);
+INSERT INTO ff_class_day VALUES (25, 1); 
+INSERT INTO ff_class_day VALUES (25, 3);  
+INSERT INTO ff_class_day VALUES (25, 5);  
+INSERT INTO ff_class_day VALUES (26, 2);
+INSERT INTO ff_class_day VALUES (26, 4);  
+INSERT INTO ff_class_day VALUES (27, 1);  
+INSERT INTO ff_class_day VALUES (27, 3);  
+INSERT INTO ff_class_day VALUES (28, 2);  
+INSERT INTO ff_class_day VALUES (28, 4);  
+INSERT INTO ff_class_day VALUES (29, 6);
+INSERT INTO ff_class_day VALUES (30, 6); 
+
+
+INSERT INTO ff_class_member VALUES (1, 21, 11);
+INSERT INTO ff_class_member VALUES (2, 22, 12);
+INSERT INTO ff_class_member VALUES (3, 23, 13);
+INSERT INTO ff_class_member VALUES (4, 24, 14);
+INSERT INTO ff_class_member VALUES (5, 25, 15);
+INSERT INTO ff_class_member VALUES (6, 26, 16);
+INSERT INTO ff_class_member VALUES (7, 27, 17);
+INSERT INTO ff_class_member VALUES (8, 29, 19);
+INSERT INTO ff_class_member VALUES (9, 30, 20);
+INSERT INTO ff_class_member VALUES (10, 21, 12);
+INSERT INTO ff_class_member VALUES (11, 22, 13);
+INSERT INTO ff_class_member VALUES (12, 23, 14);
+INSERT INTO ff_class_member VALUES (13, 24, 15);
+INSERT INTO ff_class_member VALUES (14, 25, 16);
+INSERT INTO ff_class_member VALUES (15, 26, 17);
+INSERT INTO ff_class_member VALUES (16, 27, 18);
+INSERT INTO ff_class_member VALUES (17, 29, 20);
+INSERT INTO ff_class_member VALUES (18, 30, 11);
+
+
+INSERT INTO ff_payment VALUES (PAYMENT_ID_SEQ.NEXTVAL, 11, 1, '02-OCT-2024', 39.99, 1);
+INSERT INTO ff_payment VALUES (PAYMENT_ID_SEQ.NEXTVAL, 12, 2, '02-NOV-2024', 49.99, 1);
+INSERT INTO ff_payment VALUES (PAYMENT_ID_SEQ.NEXTVAL, 11, 1, '02-NOV-2024', 39.99, 1);
+INSERT INTO ff_payment VALUES (PAYMENT_ID_SEQ.NEXTVAL, 13, 2, '03-NOV-2024', 49.99, 4);
+INSERT INTO ff_payment VALUES (PAYMENT_ID_SEQ.NEXTVAL, 15, 1, '05-NOV-2024', 39.99, 1);
+INSERT INTO ff_payment VALUES (PAYMENT_ID_SEQ.NEXTVAL, 16, 3, '06-NOV-2024', 89.99, 2);
+INSERT INTO ff_payment VALUES (PAYMENT_ID_SEQ.NEXTVAL, 17, 1, '07-NOV-2024', 39.99, 2);
+INSERT INTO ff_payment VALUES (PAYMENT_ID_SEQ.NEXTVAL, 18, 3, '08-NOV-2024', 89.99, 1);
+INSERT INTO ff_payment VALUES (PAYMENT_ID_SEQ.NEXTVAL, 19, 3, '09-NOV-2024', 89.99, 2);
+INSERT INTO ff_payment VALUES (PAYMENT_ID_SEQ.NEXTVAL, 20, 1, '10-NOV-2024', 19.99, 5);
+
+COMMIT;

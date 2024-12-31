@@ -1,0 +1,45 @@
+-- Sample Scripts (Package)
+-- CHECK_PAYSTATUS_SP procedure
+DECLARE
+    lv_total_members NUMBER;
+BEGIN
+    FITNESS_CLUB_PKG.pv_total_members := 0;
+    FITNESS_CLUB_PKG.CHECK_PAYSTATUS_SP(1);
+    lv_total_members := FITNESS_CLUB_PKG.pv_total_members;
+    DBMS_OUTPUT.PUT_LINE('Total Members Processed: ' || lv_total_members);
+END;
+
+-- DISPLAY_CLASS_MEMBERS_SP procedure
+DECLARE
+    lv_total_members NUMBER;
+BEGIN
+    FITNESS_CLUB_PKG.pv_total_members := 0;
+    FITNESS_CLUB_PKG.DISPLAY_CLASS_MEMBERS_SP(21);
+    lv_total_members := FITNESS_CLUB_PKG.pv_total_members;
+    DBMS_OUTPUT.PUT_LINE('Total Members Processed: ' || lv_total_members);
+END;
+
+-- GET_CLASSES_BY_DAY_SF function
+DECLARE
+    lv_cursor SYS_REFCURSOR;
+    lv_class_name VARCHAR2(30);
+    lv_start_time VARCHAR2(20);
+    lv_end_time VARCHAR2(20);
+BEGIN
+    lv_cursor := FITNESS_CLUB_PKG.GET_CLASSES_BY_DAY_SF(1);
+    LOOP
+        FETCH lv_cursor INTO lv_class_name, lv_start_time, lv_end_time;
+        EXIT WHEN lv_cursor%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('Class: ' || lv_class_name || ', Time: ' || lv_start_time || ' - ' || lv_end_time);
+    END LOOP;
+    CLOSE lv_cursor;
+END;
+
+-- GET_MEMBERSHIP_PRICE_SF function
+DECLARE
+    lv_price NUMBER;
+BEGIN
+    lv_price := FITNESS_CLUB_PKG.GET_MEMBERSHIP_PRICE_SF(2);
+    DBMS_OUTPUT.PUT_LINE('Membership Price: ' || lv_price);
+END;
+

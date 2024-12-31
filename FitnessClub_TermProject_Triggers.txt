@@ -1,0 +1,21 @@
+create or replace TRIGGER CHECK_PAYMENT_AMOUNT_TRG -- Trigger #1
+BEFORE UPDATE OR INSERT ON ff_payment 
+FOR EACH ROW 
+BEGIN
+    IF :NEW.amount < 0 THEN
+        RAISE_APPLICATION_ERROR(-20002, 'Payment amount cannot be negative.');
+    END IF;
+END;
+
+
+
+create or replace TRIGGER CHECK_PHONE_FORMAT_TRG -- Trigger #2
+BEFORE UPDATE OR INSERT ON ff_member 
+FOR EACH ROW 
+BEGIN
+    IF :NEW.phone_number IS NOT NULL THEN
+        IF NOT REGEXP_LIKE(:NEW.phone_number, '^\d{3}-\d{3}-\d{4}$') THEN
+            RAISE_APPLICATION_ERROR(-20001, 'Phone number must be in the format XXX-XXX-XXXX');
+        END IF;
+    END IF;
+END;

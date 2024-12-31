@@ -1,0 +1,45 @@
+-- TRIGGERS
+-- CHECK_PAYMENT_AMOUNT_TRG trigger
+-- Test Case #1
+BEGIN
+    INSERT INTO ff_payment VALUES (10011, 15, 1, SYSDATE, 39.99, 2);
+    DBMS_OUTPUT.PUT_LINE('Test Case 1: Passed - Payment inserted successfully with a positive amount.');
+END;
+
+-- Test Case #2
+BEGIN
+    INSERT INTO ff_payment VALUES (10012, 12, 2, SYSDATE, -49.99, 2);
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Test Case 2: ' || SQLERRM);
+END;
+
+-- Test Case #3
+BEGIN
+    UPDATE ff_payment
+    SET amount = -39.99
+    WHERE payment_id = 10007; 
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Test Case 3: ' || SQLERRM);
+END;
+
+
+
+-- CHECK_PHONE_FORMAT_TRG trigger
+-- Test Case #1
+BEGIN
+    INSERT INTO ff_member VALUES (21, 'Alice', 'Johnson', '02-JUL-2000', '436-456-7890', 'alice.johnson@gmail.com', '13 Oak Street');
+    DBMS_OUTPUT.PUT_LINE('Test Case 1: - Member with valid phone number inserted successfully.');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Test Case 1: Failed - ' || SQLERRM);
+END;
+
+-- Test Case #2
+BEGIN
+    INSERT INTO ff_member VALUES (22, 'Bob', 'Smith', '28-OCT-1998', '1234567890', 'bob.smith@example.com', '45 Pine St');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Test Case 2: - ' || SQLERRM);
+END;

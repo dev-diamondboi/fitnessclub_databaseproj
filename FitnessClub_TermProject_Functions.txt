@@ -1,0 +1,36 @@
+create or replace FUNCTION GET_CLASSES_BY_DAY_SF -- Function #1
+    (p_day_id NUMBER)
+    RETURN SYS_REFCURSOR 
+IS
+    lv_cursor SYS_REFCURSOR;
+BEGIN
+    OPEN lv_cursor FOR
+        SELECT class_name, start_time, end_time
+        FROM ff_class c
+        JOIN ff_class_day cd ON c.class_id = cd.class_id
+        WHERE cd.day_id = p_day_id;
+
+    RETURN lv_cursor;
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE_APPLICATION_ERROR(-20002, 'An unexpected error occurred: ' || SQLERRM);
+END;
+
+
+
+create or replace FUNCTION GET_MEMBERSHIP_PRICE_SF -- Function #2
+    (p_membership_id IN NUMBER)
+    RETURN NUMBER 
+IS 
+    lv_membership_price ff_membership.price%TYPE;
+BEGIN
+    SELECT price INTO lv_membership_price
+    FROM ff_membership
+    WHERE membership_id = p_membership_id;
+    RETURN lv_membership_price;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN -1;
+    WHEN OTHERS THEN
+        RAISE_APPLICATION_ERROR(-20001, 'An error occurred while retrieving the membership price.');
+END;

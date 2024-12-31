@@ -1,0 +1,152 @@
+-- PROCEDURES
+-- CHECK_PAYSTATUS_SP procedure
+-- Test Case #1
+BEGIN
+    CHECK_PAYSTATUS_SP(1); -- Displays all members that have "Paid" payment status 
+END;
+
+-- Test Case #2
+BEGIN
+    CHECK_PAYSTATUS_SP(3); -- Displays message "No payments found with status ID: 3"
+END;
+
+--Test Case #3
+BEGIN
+    CHECK_PAYSTATUS_SP(10); -- Displays an error, because there is no payment status associated with ID 10
+END;
+
+
+-- DISPLAY_CLASS_MEMBERS_SP procedure
+-- Test Case #1
+BEGIN
+    DISPLAY_CLASS_MEMBERS_SP(21); -- Lists members for Morning Yoga class (id = 21)
+END;
+
+-- Test Case #2
+BEGIN
+    DISPLAY_CLASS_MEMBERS_SP(28); -- No members enrolled in Spin Class (id = 28) 
+END;
+
+-- Test Case #3
+BEGIN
+    DISPLAY_CLASS_MEMBERS_SP(31); -- Class does not exist with provided id
+END;
+
+
+
+-- FUNCTIONS
+-- GET_MEMBERSHIP_PRICE_SF function
+-- Test Case #1: Valid Membership ID
+DECLARE
+    lv_membership_id NUMBER := 2;
+    lv_membership_type ff_membership.membership_type%TYPE;
+BEGIN
+    SELECT membership_type INTO lv_membership_type
+    FROM ff_membership 
+    WHERE membership_id = lv_membership_id;
+    DBMS_OUTPUT.PUT_LINE('Price for ' || lv_membership_type || ' Membership is: ' || '$' || GET_MEMBERSHIP_PRICE_SF(lv_membership_id) || '.');
+END;
+
+
+
+-- Test Case #2: Invalid Membership ID
+DECLARE
+    lv_membership_id NUMBER := 10;
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Provided membership ID does not exist and function returns: ' || GET_MEMBERSHIP_PRICE_SF(lv_membership_id));
+END;
+
+
+
+-- GET_CLASSES_BY_DAY_SF function 
+-- Test case #1: Valid Day ID - Monday
+DECLARE
+    lv_cursor SYS_REFCURSOR;
+    lv_day_id ff_days.day_id%TYPE;
+    lv_day_name ff_days.day_name%TYPE;
+    lv_class_name ff_class.class_name%TYPE;
+    lv_start_time ff_class.start_time%TYPE;
+    lv_end_time ff_class.end_time%TYPE;
+    lv_no_classes BOOLEAN := TRUE;
+BEGIN
+    lv_day_id := 1;
+    lv_cursor := GET_CLASSES_BY_DAY_SF(lv_day_id);
+    SELECT day_name INTO lv_day_name
+    FROM ff_days
+    WHERE day_id = lv_day_id;
+    DBMS_OUTPUT.PUT_LINE('Classes on ' || lv_day_name || ':');
+    LOOP
+        FETCH lv_cursor INTO lv_class_name, lv_start_time, lv_end_time;
+        EXIT WHEN lv_cursor%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('Class Name: ' || lv_class_name || ', Start Time: ' || lv_start_time || ', End Time: ' || lv_end_time);
+        lv_no_classes := FALSE;
+    END LOOP;
+    CLOSE lv_cursor;
+    
+    IF lv_no_classes THEN
+        DBMS_OUTPUT.PUT_LINE('No classes on such day.');
+    END IF;
+END;
+
+-- Test case #2: Valid Day ID - Sunday (This day has no classes)
+DECLARE
+    lv_cursor SYS_REFCURSOR;
+    lv_day_id ff_days.day_id%TYPE;
+    lv_day_name ff_days.day_name%TYPE;
+    lv_class_name ff_class.class_name%TYPE;
+    lv_start_time ff_class.start_time%TYPE;
+    lv_end_time ff_class.end_time%TYPE;
+    lv_no_classes BOOLEAN := TRUE;
+BEGIN
+    lv_day_id := 7;
+    lv_cursor := GET_CLASSES_BY_DAY_SF(lv_day_id);
+    SELECT day_name INTO lv_day_name
+    FROM ff_days
+    WHERE day_id = lv_day_id;
+    DBMS_OUTPUT.PUT_LINE('Classes on ' || lv_day_name || ':');
+    LOOP
+        FETCH lv_cursor INTO lv_class_name, lv_start_time, lv_end_time;
+        EXIT WHEN lv_cursor%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('Class Name: ' || lv_class_name || ', Start Time: ' || lv_start_time || ', End Time: ' || lv_end_time);
+        lv_no_classes := FALSE;
+    END LOOP;
+    CLOSE lv_cursor;
+    
+    IF lv_no_classes THEN
+        DBMS_OUTPUT.PUT_LINE('No classes on such day.');
+    END IF;
+END;
+
+-- Test case #3: Invalid Day ID
+DECLARE
+    lv_cursor SYS_REFCURSOR;
+    lv_day_id ff_days.day_id%TYPE;
+    lv_day_name ff_days.day_name%TYPE;
+    lv_class_name ff_class.class_name%TYPE;
+    lv_start_time ff_class.start_time%TYPE;
+    lv_end_time ff_class.end_time%TYPE;
+    lv_no_classes BOOLEAN := TRUE;
+BEGIN
+    lv_day_id := 10;
+    lv_cursor := GET_CLASSES_BY_DAY_SF(lv_day_id);
+    SELECT day_name INTO lv_day_name
+    FROM ff_days
+    WHERE day_id = lv_day_id;
+    DBMS_OUTPUT.PUT_LINE('Classes on ' || lv_day_name || ':');
+    LOOP
+        FETCH lv_cursor INTO lv_class_name, lv_start_time, lv_end_time;
+        EXIT WHEN lv_cursor%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE('Class Name: ' || lv_class_name || ', Start Time: ' || lv_start_time || ', End Time: ' || lv_end_time);
+        lv_no_classes := FALSE;
+    END LOOP;
+    CLOSE lv_cursor;
+    
+    IF lv_no_classes THEN
+        DBMS_OUTPUT.PUT_LINE('No classes on such day.');
+    END IF;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Invalid day ID: ' || lv_day_id || '. No such day exists.');
+END;
+
+

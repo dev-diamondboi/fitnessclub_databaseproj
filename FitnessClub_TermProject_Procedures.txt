@@ -1,0 +1,75 @@
+create or replace PROCEDURE CHECK_PAYSTATUS_SP -- Procedure #1
+    (p_status IN NUMBER)
+AS 
+    CURSOR payment_cur IS
+        SELECT p.payment_id, m.member_id, m.firstname, m.lastname
+        FROM ff_payment p 
+        JOIN ff_member m ON p.member_id = m.member_id
+        WHERE p.idstatus = p_status;
+    lv_payment_id ff_payment.payment_id%TYPE;
+    lv_status ff_status.statusdesc%TYPE;
+    lv_member_id ff_member.member_id%TYPE;
+    lv_firstname ff_member.firstname%TYPE;
+    lv_lastname ff_member.lastname%TYPE;
+    lv_no_data BOOLEAN := TRUE;
+BEGIN
+    SELECT statusdesc INTO lv_status
+    FROM ff_status 
+    WHERE idstatus = p_status;
+    DBMS_OUTPUT.PUT_LINE('Members that have payment status: ' || lv_status);
+    OPEN payment_cur;
+    LOOP
+        FETCH payment_cur INTO lv_payment_id, lv_member_id, lv_firstname, lv_lastname;
+        EXIT WHEN payment_cur%NOTFOUND;
+        lv_no_data := FALSE;
+        DBMS_OUTPUT.PUT_LINE('Member ID: ' || lv_member_id || ', Name: ' || lv_firstname || ' ' || lv_lastname || ' (Payment ID: ' || lv_payment_id || ').');
+    END LOOP;
+    CLOSE payment_cur;
+
+    IF lv_no_data THEN
+        DBMS_OUTPUT.PUT_LINE('No payments found with status ID: ' || p_status);
+    END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+END;
+
+
+
+create or replace PROCEDURE DISPLAY_CLASS_MEMBERS_SP -- Procedure #2
+    (p_class_id IN NUMBER)
+AS
+    CURSOR member_cur IS
+        SELECT m.firstname, m.lastname
+        FROM ff_member m 
+        JOIN ff_class_member a ON m.member_id = a.member_id
+        WHERE a.class_id = p_class_id;
+    lv_firstname ff_member.firstname%TYPE;
+    lv_lastname ff_member.lastname%TYPE;
+    lv_classname ff_class.class_name%TYPE;
+    no_members_found BOOLEAN := TRUE;
+
+BEGIN
+    SELECT class_name INTO lv_classname
+    FROM ff_class
+    WHERE class_id = p_class_id;
+    DBMS_OUTPUT.PUT_LINE('"' || lv_classname || '"' || ' members:');
+    OPEN member_cur;
+    LOOP
+        FETCH member_cur INTO lv_firstname, lv_lastname;
+        EXIT WHEN member_cur%NOTFOUND;
+        DBMS_OUTPUT.PUT_LINE(lv_firstname || ' ' || lv_lastname);
+        no_members_found := FALSE;
+    END LOOP;
+    CLOSE member_cur;
+
+    IF no_members_found THEN
+        DBMS_OUTPUT.PUT_LINE('No members found for the specified class ID.');
+    END IF;
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Class with that ID does not exist.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('An unexpected error occurred: ' || SQLERRM);
+END;
